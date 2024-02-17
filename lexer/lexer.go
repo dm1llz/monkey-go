@@ -56,6 +56,10 @@ func (lex *Lexer) NextToken() token.Token {
 			tok.Literal = lex.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
+		} else if isDigit(lex.ch) {
+			tok.Type = token.INT
+			tok.Literal = lex.readNumber()
+			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, lex.ch)
 		}
@@ -74,16 +78,28 @@ func (lex *Lexer) readIdentifier() string {
 	return lex.input[position:lex.position]
 }
 
+func (lex *Lexer) readNumber() string {
+	position := lex.position
+	for isDigit(lex.ch) {
+		lex.readChar()
+	}
+	return lex.input[position:lex.position]
+}
+
 func (lex *Lexer) skipWhitespace() {
 	for lex.ch == ' ' || lex.ch == '\t' || lex.ch == '\n' || lex.ch == '\r' {
 		lex.readChar()
 	}
 }
 
-func newToken(tokenType token.TokenType, ch byte) token.Token {
-	return token.Token{Type: tokenType, Literal: string(ch)}
+func isDigit(ch byte) bool {
+	return '0' <= ch && ch <= '9'
 }
 
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+}
+
+func newToken(tokenType token.TokenType, ch byte) token.Token {
+	return token.Token{Type: tokenType, Literal: string(ch)}
 }
